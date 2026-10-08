@@ -1,0 +1,43 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "gamecube-base",
+      "hidden": true,
+      "generator": "MinGW Makefiles",
+      "toolchainFile": "${sourceDir}/cmake/GameCube-Windows.cmake"
+    },
+    {
+      "name": "gamecube-debug",
+      "displayName": "GameCube (Debug)",
+      "inherits": "gamecube-base",
+      "binaryDir": "${sourceDir}/out/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g -Og -DDEBUG"
+      }
+    },
+    {
+      "name": "gamecube-release",
+      "displayName": "GameCube (Release)",
+      "inherits": "gamecube-base",
+      "binaryDir": "${sourceDir}/out/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "gamecube-debug",
+      "displayName": "GameCube (Debug Build)",
+      "configurePreset": "gamecube-debug"
+    },
+    {
+      "name": "gamecube-release",
+      "displayName": "GameCube (Release Build)",
+      "configurePreset": "gamecube-release"
+    }
+  ]
+}
