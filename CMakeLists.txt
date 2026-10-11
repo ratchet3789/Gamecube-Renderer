@@ -32,7 +32,8 @@ add_executable(GCCubeEngine ${SOURCES}
         src/Debug.h
         src/input_manager.h
         src/observer.h
-        src/generic_types.h)
+        src/generic_types.h
+        src/AssetTypes/StaticMesh.h)
 
 # Include libogc headers explicitly (Use BEFORE/PRIVATE so CLion indexer prioritizes it)
 target_include_directories(GCCubeEngine PRIVATE

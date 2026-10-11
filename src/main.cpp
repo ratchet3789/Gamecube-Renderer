@@ -159,17 +159,8 @@ void* InitializeFramebuffers()
 	GX_SetCopyFilter(g_GXRMode->aa, g_GXRMode->sample_pattern, GX_TRUE, g_GXRMode->vfilter);
 	GX_SetFieldMode(g_GXRMode->field_rendering, ((g_GXRMode->viHeight == 2 * g_GXRMode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
-	GX_SetCullMode(GX_CULL_BACK);
+	GX_SetCullMode(GX_CULL_NONE);
 	GX_CopyDisp(g_FrameBuffers[g_FramebufferCurrent], GX_TRUE);
 
 
-	VIDEO_Configure(g_GXRMode);
-	VIDEO_SetNextFramebuffer(fb);
-	VIDEO_SetBlack(false);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if (g_GXRMode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-
-	return fb;
 }
