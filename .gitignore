@@ -1,2 +1,4 @@
 .idea/
 _BUILD_*/
+Tools/ModelToGC/.vs
+Tools/ModelToGC/out/
