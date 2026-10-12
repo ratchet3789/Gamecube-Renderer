@@ -1,6 +1,4 @@
 #include <gccore.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <malloc.h>
 
 /*
@@ -52,115 +50,168 @@
 #define DEFAULT_FIFO_SIZE (256*1024) // See GX_FIFO_MINSIZE
 
 // Vertex Data
-int16a_32(cube) = {
+int16a_32(vertices) = {
 	// x y z
-	-30,  30, -30, 	// 0
-	 30,  30, -30, 	// 1
-	 30,  30,  30, 	// 2
-	-30,  30,  30, 	// 3
-	 30, -30, -30, 	// 4
-	 30, -30,  30, 	// 5
-	-30, -30,  30,  // 6
-	-30, -30, -30,  // 7
+	0, 15, 0,
+	-15, -15, 0,
+	15, -15, 0
 };
 
 uint8a_32(colors) = {
 	// r, g, b, a
-	100,  10, 100, 255, // 0 purple
-	240,   0,   0, 255,	// 1 red
-	255, 180,   0, 255,	// 2 orange
-	255, 255,   0, 255, // 3 yellow
-	 10, 120,  40, 255, // 4 green
-	  0,  20, 100, 255  // 5 blue
+	255, 0, 0, 255,
+	0, 255, 0, 255,
+	0, 0, 255, 255
 };
 
 // Double Buffering
 static uint32 g_FramebufferCurrent = 0;
 static uint32 g_FramebufferFirstFrame = 1;
-static void* g_FrameBuffers[2] = {NULL,NULL};
-static GXRModeObj* g_GXRMode = NULL;
+static void *g_FrameBuffer{NULL};
+static GXRModeObj *g_GXRMode = NULL;
 
-GXColor g_BackBuffer = {107,92,177};
+vu8 ReadyForCopy{false};
 
-void* Initialize();
+GXColor g_BackBuffer = {107, 92, 177};
+
+// Preprocessor Definitions
+void UpdateScreen(Mtx viewMatrix);
+static void CopyBuffers(uint32 unused);
 
 int main()
 {
-	printf("[GAMECUBE RENDERING] Initialized\n");
-	Initialize();
+	Mtx View;
+	Mtx44 Projection;
+	PADStatus Controller[4];
+	GXColor BackgroundColor = {75, 0, 130, 255};
+	void *FIFOBuffer = NULL;
 
-	printf("[GAMECUBE RENDERING] SYS LOOP\n");
+	VIDEO_Init();
+	g_GXRMode = VIDEO_GetPreferredMode(NULL);
+
+	printf("[GAMECUBE] Video Initialized\n");
+
+	PAD_Init();
+	g_FrameBuffer = MEM_K0_TO_K1(SYS_AllocateFramebuffer(g_GXRMode));
+
+	printf("[GAMECUBE] Gamepad Initialized\n");
+
+	VIDEO_Configure(g_GXRMode);
+	VIDEO_SetNextFramebuffer(g_FrameBuffer);
+	VIDEO_SetPostRetraceCallback(CopyBuffers);
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+
+	printf("[GAMECUBE] Video Flush\n");
+
+	FIFOBuffer = MEM_K0_TO_K1(memalign(32, DEFAULT_FIFO_SIZE));
+	memset(FIFOBuffer, 0, DEFAULT_FIFO_SIZE);
+
+	printf("[GAMECUBE] FIFO Allocated\n");
+
+	GX_Init(FIFOBuffer, DEFAULT_FIFO_SIZE);
+	GX_SetCopyClear(BackgroundColor, 0x00ffffff);
+	GX_SetViewport(0, 0, g_GXRMode->fbWidth, g_GXRMode->efbHeight, 0, 1);
+	GX_SetDispCopyYScale((float) g_GXRMode->xfbHeight / (float) g_GXRMode->efbHeight);
+	GX_SetScissor(0, 0, g_GXRMode->fbWidth, g_GXRMode->efbHeight);
+	GX_SetDispCopySrc(0, 0, g_GXRMode->fbWidth, g_GXRMode->efbHeight);
+	GX_SetDispCopyDst(g_GXRMode->fbWidth, g_GXRMode->xfbHeight);
+	GX_SetCopyFilter(g_GXRMode->aa, g_GXRMode->sample_pattern, GX_TRUE, g_GXRMode->vfilter);
+	GX_SetFieldMode(g_GXRMode->field_rendering,((g_GXRMode->viHeight == 2 * g_GXRMode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+
+	printf("[GAMECUBE] GX Initialized\n");
+
+	GX_SetCullMode(GX_CULL_NONE);
+	GX_CopyDisp(g_FrameBuffer, GX_TRUE);
+	GX_SetDispCopyGamma(GX_GM_1_0);
+
+	printf("[GAMECUBE] Culling Setup\n");
+
+	guVector Camera = {0.0f, 0.0f, 0.0f};
+	guVector Up = {0.0f, 1.0f, 0.0f};
+	guVector Look = {0.0f, 0.0f, -1.0f};
+
+	printf("[GAMECUBE] Directions Initialized\n");
+
+	guPerspective(Projection, 60, 1.33f, 10.0f, 300.0f);
+	GX_LoadProjectionMtx(Projection, GX_PERSPECTIVE);
+	printf("[GAMECUBE] Projection Matrix Initialized\n");
+
+	GX_ClearVtxDesc();
+	printf("[GAMECUBE] GX_ClearVtxDesc\n");
+	GX_SetVtxDesc(GX_VA_POS, GX_INDEX8);
+	GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX8);
+	printf("[GAMECUBE] GX_SetVtxDesc\n");
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+	printf("[GAMECUBE] GX_SetVtxAttrFmt\n");
+	GX_SetArray(GX_VA_POS, vertices, 3 * sizeof(int16));
+	GX_SetArray(GX_VA_CLR0, colors, 4 * sizeof(uint8));
+	printf("[GAMECUBE] GX_SetArray\n");
+	GX_SetNumChans(1);
+	printf("[GAMECUBE] GX_SetNumChans\n");
+	GX_SetNumTexGens(0);
+	printf("[GAMECUBE] GX_SetNumTexGens\n");
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+	printf("[GAMECUBE] GX_SetTevOrder\n");
+	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+	printf("[GAMECUBE] GX_SetTevOp\n");
+
+	printf("[GAMECUBE] Pre Loop\n");
+
 	while (SYS_MainLoop())
 	{
-		VIDEO_WaitVSync();
-		PAD_ScanPads();
-		int buttonsDown = PAD_ButtonsDown(0);
-
-		if (buttonsDown & PAD_BUTTON_A)
+		guLookAt(View, &Camera, &Up, &Look);
+		GX_SetViewport(0, 0, g_GXRMode->fbWidth, g_GXRMode->efbHeight, 0, 1);
+		GX_InvVtxCache();
+		GX_InvalidateTexAll();
+		UpdateScreen(View);
+		PAD_Read(Controller);
+		if (Controller[0].button & PAD_BUTTON_START)
 		{
-			printf("[GAMECUBE RENDERING] A Pressed\n");
-			printf("Button A Pressed.\n");
-		}
-
-		if (buttonsDown & PAD_BUTTON_START)
-		{
-			printf("[GAMECUBE RENDERING] Start Pressed\n");
-			exit(0);
+			void(*reload)() = (void(*)())0x80001800;
+			reload();
 		}
 	}
-
 	return 0;
 }
 
-void* InitializeFramebuffers()
+void UpdateScreen(Mtx viewMatrix)
 {
-	float yScale;
-	uint32 framebufferHeight;
+	Mtx ModelView;
 
-	// Init the Video, Setup Framebuffer and setup retrace callback to copy EFB to XFB
-	VIDEO_Init();
-	PAD_Init();
+	guMtxIdentity(ModelView);
+	guMtxTransApply(ModelView, ModelView, 0.0f, 0.0f, -50.0f);
+	guMtxConcat(viewMatrix, ModelView, ModelView);
 
-	g_GXRMode = VIDEO_GetPreferredMode(NULL);
+	GX_LoadPosMtxImm(ModelView, GX_PNMTX0);
 
-	g_FramebufferCurrent = g_FramebufferFirstFrame = 0;
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3);
 
-	void* g_pFIFO = nullptr;
-	g_pFIFO = memalign(32, DEFAULT_FIFO_SIZE);
-	memset(g_pFIFO, 0, DEFAULT_FIFO_SIZE);
+	GX_Position1x8(0);
+	GX_Color1x8(0);
+	GX_Position1x8(1);
+	GX_Color1x8(1);
+	GX_Position1x8(2);
+	GX_Color1x8(2);
 
-	g_FrameBuffers[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(g_GXRMode));
-	g_FrameBuffers[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(g_GXRMode));
+	GX_End();
 
-	VIDEO_Configure(g_GXRMode);
-	VIDEO_SetNextFramebuffer(g_FrameBuffers[g_FramebufferCurrent]);
+	GX_DrawDone();
+	ReadyForCopy = GX_TRUE;
 
-	if (!g_FramebufferFirstFrame)
-		VIDEO_SetBlack(FALSE);
-
-	VIDEO_Flush();
 	VIDEO_WaitVSync();
+	return; // If this fixes it, what?
+}
 
-	if (g_GXRMode)
-		VIDEO_WaitVSync();
-
-	console_init(g_FrameBuffers[g_FramebufferCurrent], 20,20,g_GXRMode->fbWidth, g_GXRMode->xfbHeight, g_GXRMode->fbWidth * VI_DISPLAY_PIX_SZ);
-
-	GX_Init(g_pFIFO, DEFAULT_FIFO_SIZE);
-
-	GX_SetCopyClear(g_BackBuffer, 0x00ffffff);
-
-	// Other GX Setup
-	GX_SetViewport(0,0,g_GXRMode->fbWidth, g_GXRMode->efbHeight, 0,1);
-	yScale = GX_GetYScaleFactor(g_GXRMode->efbHeight, g_GXRMode->xfbHeight);
-	framebufferHeight = GX_SetDispCopyYScale(yScale);
-	GX_SetScissor(0,0,g_GXRMode->fbWidth, g_GXRMode->efbHeight);
-	GX_SetDispCopyDst(g_GXRMode->fbWidth, framebufferHeight);
-	GX_SetCopyFilter(g_GXRMode->aa, g_GXRMode->sample_pattern, GX_TRUE, g_GXRMode->vfilter);
-	GX_SetFieldMode(g_GXRMode->field_rendering, ((g_GXRMode->viHeight == 2 * g_GXRMode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
-
-	GX_SetCullMode(GX_CULL_NONE);
-	GX_CopyDisp(g_FrameBuffers[g_FramebufferCurrent], GX_TRUE);
-
-
+static void CopyBuffers(uint32 count __attribute__((unused)))
+{
+	if (ReadyForCopy == GX_TRUE)
+	{
+		GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+		GX_SetColorUpdate(GX_TRUE);
+		GX_CopyDisp(g_FrameBuffer, GX_TRUE);
+		GX_Flush();
+		ReadyForCopy = GX_FALSE;
+	}
 }
