@@ -53,27 +53,71 @@
 // Vertex Data
 int16a_32(vertices) = {
 	// x y z
-	0, 15, 0,
-	-15, -15, 0,
-	15, -15, 0
+	-15, 15, 0,		// Top Left
+	-15, -15, 0,	// Bottom Left
+	15, -15, 0,		// Bottom Right
+	15, 15, 0		// Top Right
+};
+
+int8a_32(indices) = {
+	0,1,2, // Tri 1 (Left)
+	1,2,3 // Tri 2 (Right)
 };
 
 uint8a_32(colors) = {
 	// r, g, b, a
 	255, 0, 0, 255,
 	0, 255, 0, 255,
-	0, 0, 255, 255
+	0, 0, 255, 255,
+	255, 255, 0, 255
 };
+
+void InitModelDisplayList(s16* RawVerts, u16* RawIndices, u32 numIndices)
+{
+	void* DisplayListBuffer = NULL;
+	u32 DisplayListSize = 0;
+
+	// Allocate FIFO
+	DisplayListBuffer = memalign(32, DEFAULT_FIFO_SIZE);
+	memset(DisplayListBuffer, 0, DEFAULT_FIFO_SIZE);
+
+	// Setup Array ptr for indexed drawing
+	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
+	GX_SetArray(GX_VA_POS, RawVerts, 3 * sizeof(s16));
+
+	DCStoreRange(DisplayListBuffer, DEFAULT_FIFO_SIZE);
+
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numIndices);
+	for (u32 i = 0; i < numIndices; i++)
+	{
+		GX_Position1x16(RawIndices[i]);
+	}
+	GX_End();
+
+	DisplayListSize = GX_EndDispList();
+	DCStoreRange(DisplayListBuffer, DisplayListSize);
+}
+
+void RenderModel(Mtx ModelMatrix)
+{
+	// Apply Loc/Rot/Scale
+	GX_LoadPosMtxImm(ModelMatrix, GX_PNMTX0);
+
+	GX_CallDispList(DisplayListBuffer, DisplayListSize);
+}
 
 // Double Buffering
 static uint32 g_FramebufferCurrent = 0;
 static uint32 g_FramebufferFirstFrame = 1;
 static void *g_FrameBuffer{NULL};
 static GXRModeObj *g_GXRMode = NULL;
-
 vu8 ReadyForCopy{false};
-
 GXColor g_BackBuffer = {107, 92, 177};
+Mtx ModelView;
+guVector camOffset;
+float lookSensitivity = 0.05f;
+
 
 // Preprocessor Definitions
 void UpdateScreen(Mtx viewMatrix);
@@ -173,31 +217,32 @@ int main()
 			void(*reload)() = (void(*)())0x80001800;
 			reload();
 		}
+
+		camOffset.x -= Controller[0].substickX * lookSensitivity;
+		//	camOffset.y -= Controller[0].substickY * lookSensitivity;
+
+
 	}
 	return 0;
 }
 
-Mtx ModelView;
-float t = 0.0f;
-
 void UpdateScreen(Mtx viewMatrix)
 {
 	guMtxIdentity(ModelView);
-	t += 0.1f;
-	guMtxTransApply(ModelView, ModelView, Controller[0].stickX * 0.25f, Controller[0].stickY * 0.25f, -50.0f);
+	guMtxTransApply(ModelView, ModelView, camOffset.x, camOffset.y, -50.0f);
 	guMtxConcat(viewMatrix, ModelView, ModelView);
 
 	GX_LoadPosMtxImm(ModelView, GX_PNMTX0);
 
-	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3);
-
-	GX_Position1x8(0);
-	GX_Color1x8(0);
-	GX_Position1x8(1);
-	GX_Color1x8(1);
-	GX_Position1x8(2);
-	GX_Color1x8(2);
-
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+		GX_Position1x8(0);
+		GX_Color1x8(0);
+		GX_Position1x8(1);
+		GX_Color1x8(1);
+		GX_Position1x8(2);
+		GX_Color1x8(2);
+		GX_Position1x8(3);
+		GX_Color1x8(3);
 	GX_End();
 
 	GX_DrawDone();

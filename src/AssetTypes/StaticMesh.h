@@ -2,54 +2,106 @@
 
 #ifndef GCCUBEENGINE_STATICMESH_H
 #define GCCUBEENGINE_STATICMESH_H
+#include <cstring>
 #include <debug.h>
+#include <ogc/gx.h>
+#include <malloc.h>
+#include <ogc/cache.h>
 
 #include "generic_types.h"
+#define alignas_gc(t) __attribute__((aligned(t)))
+
+struct alignas_gc(16) Vec3
+{
+	f32 x;
+	f32 y;
+	f32 z;
+};
+
+struct alignas_gc(16) Vec2
+{
+	f32 x;
+	f32 y;
+};
+
 
 // .gcstm
 // Byte packed to 64 to support 2 32 byte cache
+// SHOULD be 48 bytes wide
 // lines in the GC.
-struct GAMECUBE_StaticMesh
+struct alignas_gc(32) GAMECUBE_StaticMesh
 {
-	char TypeIdentifier[4] {'G','C','S','M'};
-	uint32 VersionNumber = 1;
+	char TypeIdentifier[4]{'G', 'C', 'S', 'M'};
+	unsigned int VersionNumber = 1;
 
 	// Counts
-	uint32 IndexCount;
-	uint32 VertexCount;
+	unsigned int IndexCount;
+	unsigned int VertexCount;
+	unsigned int UVCount;
+	unsigned int NormalCount;
+	unsigned int ColorCount;
 
 	// Offsets
-	uint32 IndexArrayOffset;
-	uint32 VertexArrayOffset;
-	uint32 UVOffset;
-	uint32 NormalOffset;
-	uint32 ColorOffset;
+	unsigned int IndexArrayOffset;
+	unsigned int VertexArrayOffset;
+	unsigned int UVOffset;
+	unsigned int NormalOffset;
+	unsigned int ColorOffset;
 
-	// Because the cache lines of the Gamecube are 32 bytes and it expects exact values, we just throw some padding
-	// into this object to ensure its going to be 2 cache lines long!
-	// The logic is either 32 or 64 bytes. If we have 36 (as we currently do without padding) then we need to pad out
-	// those extra bytes so it matches those exact 2 lines.
-	char padding[28];
+	char padding[16];
 };
 
-class StaticMeshObject
+class alignas_gc(32) StaticMeshObject
 {
-	StaticMeshObject(const char* FilePath)
+	StaticMeshObject(const char *FilePath)
 	{
 		// Todo Gamecube File IO
 		StaticMeshObject = GAMECUBE_StaticMesh();
 	}
 
+	Vec3 *vertices;
+	Vec3 *vertNormals;
+	Vec2 *UVs;
+	Vec3 *indices;
+
+	void *DisplayListBuffer{NULL};
+	u32 DisplayListSize{0};
+
 	GAMECUBE_StaticMesh StaticMeshObject;
-	EObjectRenderType RenderType;
 
-	GAMECUBE_StaticMesh AsGamecubeMesh()
+	void InitModelDisplayList()
+	{
+		// Allocate FIFO Buffer
+		DisplayListBuffer = memalign(32, 256 * 1024);
+		memset(DisplayListBuffer, 0, 256 * 1024);
 
-	{ return reinterpret_cast<GAMECUBE_StaticMesh>(StaticMeshObject); }
+		// Setup Array ptr for indexed drawing
+		// Tell GX that GX_VA_POS (Vtx Position) is going to get a INT16
+		GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
+		// Tell GX that
+		GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
+		GX_SetArray(GX_VA_POS, RawVerts, 3 * sizeof(s16));
 
-	uint16* indices;
-	float VertexArray;
-	uint32 UVArray;
+		DCStoreRange(DisplayListBuffer, 256 * 1024);
+
+		GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numIndices);
+		for (u32 i = 0; i < numIndices; i++)
+		{
+			GX_Position1x16(RawIndices[i]);
+		}
+		GX_End();
+
+		DisplayListSize = GX_EndDispList();
+		DCStoreRange(DisplayListBuffer, DisplayListSize);
+	}
+
+	void RenderModel(Mtx ModelMatrix)
+	{
+		// Apply Loc/Rot/Scale
+		GX_LoadPosMtxImm(ModelMatrix, GX_PNMTX0);
+
+		GX_CallDispList(DisplayListBuffer, DisplayListSize);
+	}
 };
 
 StaticMeshObject g_SMO("");

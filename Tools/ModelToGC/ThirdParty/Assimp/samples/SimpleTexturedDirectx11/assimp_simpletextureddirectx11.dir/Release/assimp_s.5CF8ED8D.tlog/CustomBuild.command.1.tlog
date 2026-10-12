@@ -1,0 +1,10 @@
+^C:\USERS\KIMKU\DESKTOP\ASSIMP-6.0.5\SAMPLES\SIMPLETEXTUREDDIRECTX11\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/kimku/Desktop/assimp-6.0.5 -BC:/Users/kimku/Desktop/assimp-6.0.5 --check-stamp-file C:/Users/kimku/Desktop/assimp-6.0.5/samples/SimpleTexturedDirectx11/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
