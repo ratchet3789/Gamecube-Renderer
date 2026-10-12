@@ -1,9 +1,4 @@
 .idea/
 _BUILD_*/
 Tools/ModelToGC/.vs
-Tools/ModelToGC/out/
-
-# DOL = Dolphin Emulator file
-!*.dol
-# ELF = Emulator Debug File (bigger but handier)
-!*.elf
+Tools/ModelToGC/out/*
