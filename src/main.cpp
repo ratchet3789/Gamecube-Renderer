@@ -1,5 +1,6 @@
 #include <gccore.h>
 #include <malloc.h>
+#include <cmath>
 
 /*
  * Gamecube Hardware:
@@ -77,12 +78,12 @@ GXColor g_BackBuffer = {107, 92, 177};
 // Preprocessor Definitions
 void UpdateScreen(Mtx viewMatrix);
 static void CopyBuffers(uint32 unused);
+PADStatus Controller[4];
 
 int main()
 {
 	Mtx View;
 	Mtx44 Projection;
-	PADStatus Controller[4];
 	GXColor BackgroundColor = {75, 0, 130, 255};
 	void *FIFOBuffer = NULL;
 
@@ -176,12 +177,14 @@ int main()
 	return 0;
 }
 
+Mtx ModelView;
+float t = 0.0f;
+
 void UpdateScreen(Mtx viewMatrix)
 {
-	Mtx ModelView;
-
 	guMtxIdentity(ModelView);
-	guMtxTransApply(ModelView, ModelView, 0.0f, 0.0f, -50.0f);
+	t += 0.1f;
+	guMtxTransApply(ModelView, ModelView, Controller[0].stickX * 0.25f, Controller[0].stickY * 0.25f, -50.0f);
 	guMtxConcat(viewMatrix, ModelView, ModelView);
 
 	GX_LoadPosMtxImm(ModelView, GX_PNMTX0);
