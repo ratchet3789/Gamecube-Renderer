@@ -7,7 +7,7 @@
 #include <ogc/ipc.h>
 #include <stdio.h>
 
-#include "generic_types.h"
+#include "../GenericTypes.h"
 
 bool IsRunningDolphin()
 {

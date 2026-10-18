@@ -10,8 +10,22 @@
 
 using namespace std;
 
+bool IsFileSupportedFormat(const char* Arg);
+bool IsOpenGL(const char* Arg);
+
+void ProcessArguments(int args, char *argv[]);
+bool Import(const std::string& pFile);
+bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath);
+void ExportMeshToFile(const char* FilePath, const uint8_t* HeaderBlob, const size_t TotalBufferSize);
+
+bool g_bUsesOpenGL{false};
+
+// Flip UINT unless we're on OpenGL
 uint32_t FlipUINT(const uint32_t in)
 {
+	if (g_bUsesOpenGL)
+		return in;
+
 	return ((0xFF000000 & in) >> 24 | // Move 3 > 0
 		(0x00FF0000 & in) >> 8  | // Move 2 > 1
 		(0x0000FF00 & in) << 8  | // Move 1 < 2
@@ -20,12 +34,18 @@ uint32_t FlipUINT(const uint32_t in)
 
 uint16_t FlipUSHORT(const uint16_t in)
 {
+	if (g_bUsesOpenGL)
+		return in;
+
 	return ((0x00FF0000 & in) >> 8  | // Move 2 > 1
 		(0x0000FF00 & in) << 8); // Move 1 < 2
 }
 
 float FlipFLOAT(const float in)
 {
+	if (g_bUsesOpenGL)
+		return in;
+
 	uint32_t bits;
 	float out = 0.f;
 	std::memcpy(&bits, &in, sizeof(float));
@@ -33,12 +53,6 @@ float FlipFLOAT(const float in)
 	std::memcpy(&out, &bits, sizeof(float));
 	return out;
 }
-
-bool IsFileSupportedFormat(const char* Arg);
-void ProcessArguments(int args, char *argv[]);
-bool Import(const std::string& pFile);
-bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath);
-void ExportMeshToFile(const char* FilePath, const uint8_t* HeaderBlob, const size_t TotalBufferSize);
 
 int main(int argc, char *argv[])
 {
@@ -51,9 +65,16 @@ void ProcessArguments(int args, char *argv[])
 	// Ignore 0 (exe)
 	for (int i = 1; i < args; i++)
 	{
+		if (IsOpenGL(argv[i]))
+		{
+			g_bUsesOpenGL=true;
+			continue;
+		}
+
 		if (IsFileSupportedFormat(argv[i]))
 		{
 			Import(argv[i]);
+			continue;
 		}
 	}
 }
@@ -84,6 +105,13 @@ bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath)
 	{
 		aiMesh*& Mesh = MeshArray[i];
 		StaticMesh SM = StaticMesh();
+
+		if (g_bUsesOpenGL)
+		{
+			// I genuinely hate this with a passion I cannot describe to you
+			char newType[4] = {'G','L','S','M'};
+			memcpy(SM.TypeIdentifier, newType, sizeof(SM.TypeIdentifier));
+		}
 
 		// Get the count of each object and setup our Vectors
 		const uint32_t IndexSize = Mesh->mNumFaces;
@@ -192,7 +220,10 @@ bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath)
 
 		std::string SubStr = FilePath;
 		SubStr.erase(SubStr.length()-3, 3);
-		SubStr += "gcsm";
+		if (g_bUsesOpenGL)
+			SubStr += "glsm";
+		else
+			SubStr += "gcsm";
 		ExportMeshToFile(SubStr.c_str(), HeaderBlob, TotalBufferSize);
 	}
 
@@ -220,8 +251,22 @@ unordered_set<std::string> supportedFiles = {
 	"fbx", "obj"
 };
 
+unordered_set<std::string> glFlags = {
+	"gl", "opengl", "ogl", "gles"
+};
+
 bool IsFileSupportedFormat(const char* Arg)
 {
 	std::string ArgString(Arg);
 	return supportedFiles.contains(ArgString.substr(ArgString.length()-3, 3));
+}
+
+bool IsOpenGL(const char* Arg)
+{
+	std::string ArgString(Arg);
+
+	if (Arg[0] == '-')
+		ArgString.erase(0,1);
+
+	return glFlags.contains(ArgString);
 }

@@ -42,13 +42,11 @@
 // TESTING TO MAKE SURE THINGS AREN'T BROKEN
 #include <cstring>
 
-#include "debug.h"
-#include "input_manager.h"
-#include "memory.h"
-#include "observer.h"
-#include "generic_types.h"
-
-#define DEFAULT_FIFO_SIZE (256*1024) // See GX_FIFO_MINSIZE
+#include "Core/Debugging/Debugging.h"
+#include "Core/InputManager.h"
+#include "Core/Memory.h"
+#include "Core/Algorithms/Observer.h"
+#include "Core/GenericTypes.h"
 
 // Vertex Data
 int16a_32(vertices) = {
@@ -71,41 +69,6 @@ uint8a_32(colors) = {
 	0, 0, 255, 255,
 	255, 255, 0, 255
 };
-
-void InitModelDisplayList(s16* RawVerts, u16* RawIndices, u32 numIndices)
-{
-	void* DisplayListBuffer = NULL;
-	u32 DisplayListSize = 0;
-
-	// Allocate FIFO
-	DisplayListBuffer = memalign(32, DEFAULT_FIFO_SIZE);
-	memset(DisplayListBuffer, 0, DEFAULT_FIFO_SIZE);
-
-	// Setup Array ptr for indexed drawing
-	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
-	GX_SetArray(GX_VA_POS, RawVerts, 3 * sizeof(s16));
-
-	DCStoreRange(DisplayListBuffer, DEFAULT_FIFO_SIZE);
-
-	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, numIndices);
-	for (u32 i = 0; i < numIndices; i++)
-	{
-		GX_Position1x16(RawIndices[i]);
-	}
-	GX_End();
-
-	DisplayListSize = GX_EndDispList();
-	DCStoreRange(DisplayListBuffer, DisplayListSize);
-}
-
-void RenderModel(Mtx ModelMatrix)
-{
-	// Apply Loc/Rot/Scale
-	GX_LoadPosMtxImm(ModelMatrix, GX_PNMTX0);
-
-	GX_CallDispList(DisplayListBuffer, DisplayListSize);
-}
 
 // Double Buffering
 static uint32 g_FramebufferCurrent = 0;

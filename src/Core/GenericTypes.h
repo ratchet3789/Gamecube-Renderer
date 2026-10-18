@@ -29,4 +29,18 @@ typedef signed int int32;
 // Signed 32 bit Array, 32 byte aligned
 #define int32a_32(Type)		int32 		Type[] 	ATTRIBUTE_ALIGN(32)
 
+#if defined(_WIN32)
+#define FORCE_INLINE __forceinline
+#else
+#define FORCE_INLINE inline __attribute__((always_inline))
+#endif
+
+// This is inspired by Amazons (and its probably everywhere else) AZ_UNUSED
+// because its so fucking odd to me that you need to define a var as unused
+#define GC_UNUSED __attribute__((unused))
+
+#define DEFAULT_FIFO_SIZE (256*1024)
+
+#define alignas_gc(t) __attribute__((aligned(t)))
+
 #endif //GCCUBEENGINE_GENERIC_TYPES_H

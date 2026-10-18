@@ -4,8 +4,8 @@
 #define GCCUBEENGINE_INPUT_MANAGER_H
 
 #include <ogc/pad.h>
-#include "debug.h"
-#include "observer.h"
+#include "Debugging/Debugging.h"
+#include "Algorithms/Observer.h"
 
 typedef void(*CallbackFunc)(void* data);
 

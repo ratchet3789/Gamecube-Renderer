@@ -2,3 +2,7 @@
 _BUILD_*/
 Tools/ModelToGC/.vs
 Tools/ModelToGC/out/*
+!Out/Build/*.iso
+!Out/Build/*.elf
+!Out/Build/*.dol
+Out/Build/*

@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <cstdint>
 
-#include "debug.h"
+#include "Debugging/Debugging.h"
 
 // PERFORMANCE BUDGETS
 #define ONE_MB_BYTES 1048576
