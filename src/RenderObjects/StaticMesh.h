@@ -169,7 +169,7 @@ class alignas_gc(32) StaticMeshObject
 
 	void CreateDisplayList()
 	{
-		uint32 *Indices =
+		//uint32 *Indices =
 	}
 };
 

@@ -183,8 +183,6 @@ int main()
 
 		camOffset.x -= Controller[0].substickX * lookSensitivity;
 		//	camOffset.y -= Controller[0].substickY * lookSensitivity;
-
-
 	}
 	return 0;
 }

@@ -83,7 +83,7 @@ bool Renderer::Initialize()
 
 FORCE_INLINE void Renderer::UpdateScreen()
 {
-	//guMtxIdentity();
+	//guMtxIdentity(ModelVio);
 	//guMtxTransApply();
 	//guMtxConcat();
 
