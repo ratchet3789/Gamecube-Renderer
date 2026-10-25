@@ -116,13 +116,13 @@ bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath)
 		// Get the count of each object and setup our Vectors
 		const uint32_t IndexSize = Mesh->mNumFaces;
 		const uint32_t VertexSize = Mesh->mNumVertices;
-		const uint32_t TextureSize = Mesh->GetNumUVChannels();
+		const uint32_t TextureSize = Mesh->mNumVertices * 2;
 		const uint32_t NormalSize = Mesh->mNumVertices;
 		const uint32_t ColorSize = Mesh->GetNumColorChannels();
 
 		std::vector<Vec3i> Indices{};
 		std::vector<Vec3f> Verts{};
-		std::vector<Vec3f> Textures{};
+		std::vector<Vec2f> Textures{};
 		std::vector<Vec3f> Normals{};
 		std::vector<Vec4f> Colors{};
 
@@ -143,19 +143,24 @@ bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath)
 			vtx3.y = FlipFLOAT(Mesh->mVertices[i].y);
 			vtx3.z = FlipFLOAT(Mesh->mVertices[i].z);
 			Verts.push_back(vtx3);
+
+			if (Mesh->HasTextureCoords(0))
+			{
+				Vec2f uv2{};
+				uv2.x = FlipFLOAT(Mesh->mTextureCoords[0][i].x);
+				uv2.y = FlipFLOAT(Mesh->mTextureCoords[0][i].y);
+				Textures.push_back(uv2);
+			}
+			else
+			{
+				Vec2f uv2{};
+				uv2.x = FlipFLOAT(0.0f);
+				uv2.y = FlipFLOAT(0.0f);
+				Textures.push_back(uv2);
+			}
+
 		}
 
-		Mesh->mTextureCoords;
-		for (uint32_t i = 0; i < TextureSize; i++)
-		{
-			Vec3f uv3{};
-			uv3.x = FlipFLOAT(Mesh->mTextureCoords[i]->x);
-			uv3.y = FlipFLOAT(Mesh->mTextureCoords[i]->y);
-			uv3.z = FlipFLOAT(Mesh->mTextureCoords[i]->z);
-			Textures.push_back(uv3);
-		}
-
-		Mesh->mNormals;
 		for (uint32_t i = 0; i < NormalSize; i++)
 		{
 			if (Mesh->mNormals == NULL)
@@ -168,7 +173,6 @@ bool ExtractMeshData(aiMesh** MeshArray, int MeshCount, std::string FilePath)
 			Normals.push_back(nrm3);
 		}
 
-		Mesh->mColors;
 		for (uint32_t i = 0; i < ColorSize; i++)
 		{
 			Vec4f col4{};

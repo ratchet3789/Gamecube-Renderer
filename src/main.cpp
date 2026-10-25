@@ -47,6 +47,7 @@
 #include "Core/Memory.h"
 #include "Core/Algorithms/Observer.h"
 #include "Core/GenericTypes.h"
+#include "Core/Rendering/Renderer.h"
 
 // Vertex Data
 int16a_32(vertices) = {
@@ -89,7 +90,17 @@ PADStatus Controller[4];
 
 int main()
 {
-	Mtx View;
+	g_pRenderer = new Renderer();
+	if (!g_pRenderer->Initialize())
+	{ return 0; }
+	g_pRenderer->RenderLoop();
+
+	return 0;
+}
+
+// Legacy Main()
+/*
+ * 	Mtx View;
 	Mtx44 Projection;
 	GXColor BackgroundColor = {75, 0, 130, 255};
 	void *FIFOBuffer = NULL;
@@ -146,24 +157,16 @@ int main()
 	printf("[GAMECUBE] Projection Matrix Initialized\n");
 
 	GX_ClearVtxDesc();
-	printf("[GAMECUBE] GX_ClearVtxDesc\n");
 	GX_SetVtxDesc(GX_VA_POS, GX_INDEX8);
 	GX_SetVtxDesc(GX_VA_CLR0, GX_INDEX8);
-	printf("[GAMECUBE] GX_SetVtxDesc\n");
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-	printf("[GAMECUBE] GX_SetVtxAttrFmt\n");
 	GX_SetArray(GX_VA_POS, vertices, 3 * sizeof(int16));
 	GX_SetArray(GX_VA_CLR0, colors, 4 * sizeof(uint8));
-	printf("[GAMECUBE] GX_SetArray\n");
 	GX_SetNumChans(1);
-	printf("[GAMECUBE] GX_SetNumChans\n");
 	GX_SetNumTexGens(0);
-	printf("[GAMECUBE] GX_SetNumTexGens\n");
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-	printf("[GAMECUBE] GX_SetTevOrder\n");
 	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-	printf("[GAMECUBE] GX_SetTevOp\n");
 
 	printf("[GAMECUBE] Pre Loop\n");
 
@@ -184,8 +187,7 @@ int main()
 		camOffset.x -= Controller[0].substickX * lookSensitivity;
 		//	camOffset.y -= Controller[0].substickY * lookSensitivity;
 	}
-	return 0;
-}
+ */
 
 void UpdateScreen(Mtx viewMatrix)
 {

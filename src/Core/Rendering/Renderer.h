@@ -10,19 +10,15 @@
 #include "../GenericTypes.h"
 #include "Camera.h"
 
-class Renderer
+class alignas(32) Renderer
 {
 public:
-	Renderer();
-	~Renderer();
+	Renderer() = default;
+	~Renderer() = default;
 	// The loop... if I have to explain this you probably shouldn't be reading this
 	void RenderLoop();
-	// Generates our Frame Buffers!
-	void GenerateBufferObjects();
 	// Sets up Gamecube's GX system
 	bool Initialize();
-	// Probably not needed!
-	FORCE_INLINE void UpdateScreen();
 	// Copy Display to the GPU and Flush to the Framebuffer
 	FORCE_INLINE void CopyBuffers(uint32 count GC_UNUSED);
 

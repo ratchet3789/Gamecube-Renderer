@@ -43,4 +43,35 @@ typedef signed int int32;
 
 #define alignas_gc(t) __attribute__((aligned(t)))
 
+uint32 FNV1_Str(const char* Str)
+{
+	uint32 Hash = 2166136261;
+	const uint32 FNVPrime = 16777619;
+
+	while (*Str != '\0')
+	{
+		Hash ^= static_cast<uint8>(*Str);
+		Hash *= FNVPrime;
+		Str++;
+	}
+	return Hash;
+}
+
+template <typename T>
+// Ensure floats are positive!
+uint32 FNV1_Numeric(const T& Value)
+{
+	uint32 Hash = 2166136261;
+	const uint32 FNVPrime = 16777619;
+
+	const uint8* bytes = reinterpret_cast<const uint8*>(&Value);
+	for (size_t i = 0; i < sizeof(T); i++)
+	{
+		Hash ^= bytes[i];
+		Hash *= FNVPrime;
+	}
+	return Hash;
+}
+
+
 #endif //GCCUBEENGINE_GENERIC_TYPES_H

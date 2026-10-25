@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(GCCubeEngine C CXX)
+project(GCCubeEngine C CXX ASM)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".elf")
 
@@ -14,7 +14,9 @@ set(TAR_OUTPUT "${CMAKE_SOURCE_DIR}/src/GCCubeEngine.tar")
 # Helper paths derived from TAR_ROOT
 get_filename_component(TAR_PARENT_DIR "${TAR_ROOT}" DIRECTORY)
 get_filename_component(TAR_DIR_NAME "${TAR_ROOT}" NAME)
-set(ASM_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/GCCubeEngine_tar.s")
+set(ASM_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/GCCubeEngine_tar.s"
+        src/Core/ECS/EntityManager.cpp
+        src/Core/ECS/EntityManager.h)
 
 # Ensure Debug mode is active (includes -g or -g3 for PowerPC toolchains like devkitPPC)
 if(NOT CMAKE_BUILD_TYPE)
@@ -29,6 +31,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mrvl")
 
 # Generate a .map file alongside your ELF output
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map,${CMAKE_PROJECT_NAME}.map")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-warn-execstack -Wl,--no-warn-rwx-segments")
 
 # Archive the Data folder using CMake's cross-platform tar tool
 add_custom_command(

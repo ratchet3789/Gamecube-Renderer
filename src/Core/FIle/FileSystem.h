@@ -6,6 +6,7 @@
 #define GCCUBEENGINE_FILESYSTEM_H
 
 #include <cstdio>
+#include <cstring>
 #include <gccore.h>
 #include <fat.h>
 #include <malloc.h>
@@ -17,6 +18,7 @@ extern "C"
 {
 	extern const u8 GCCubeEngine_tar[];
 	extern const u32 GCCubeEngine_tar_size;
+	extern const u8 GCCubeEngine_tar_end[];
 }
 
 class FileSystem
@@ -65,10 +67,10 @@ public:
 
 	static bool GetFile(const char* FileName, FileEntry& OutFile)
 	{
-		const u8* Cur = DataTar;
-		const u8* End = DataTar + DataTarSize;
+		const u8* Cur = GCCubeEngine_tar;
+		const u8* End = GCCubeEngine_tar + GCCubeEngine_tar_size;
 
-		while (current + sizeof(Header) < End)
+		while (Cur + sizeof(Header) < End)
 		{
 			const Header* Hdr = reinterpret_cast<const Header*>(Cur);
 
@@ -83,7 +85,7 @@ public:
 			if (Hdr->FilenamePrefix[0] != '\0')
 			{
 				strncpy(FullPath, Hdr->FilenamePrefix, sizeof(Hdr->FilenamePrefix));
-				strncpy(FullPath, "/");
+				strncpy(FullPath, "/", 1);
 			}
 
 			strncat(FullPath, Hdr->FileName, sizeof(Hdr->FileName));
