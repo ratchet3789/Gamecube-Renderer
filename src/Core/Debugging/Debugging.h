@@ -1,7 +1,7 @@
 ﻿// Created by Coby Jennings on 2026/10/08.
 
-#ifndef GCCUBEENGINE_DEBUG_H
-#define GCCUBEENGINE_DEBUG_H
+#ifndef GAMECUBEENGINE_DEBUG_H
+#define GAMECUBEENGINE_DEBUG_H
 
 #define DEBUG_EMULATOR_LOG(x, y) printf(x, y)
 #include <ogc/ipc.h>
@@ -39,4 +39,4 @@ float FlipFLOAT(const float in)
 	return out;
 }
 
-#endif //GCCUBEENGINE_DEBUG_H
+#endif // GAMECUBEENGINE_DEBUG_H

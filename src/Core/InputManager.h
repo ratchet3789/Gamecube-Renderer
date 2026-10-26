@@ -1,7 +1,7 @@
 ﻿// Created by Coby Jennings on 2026/10/08.
 
-#ifndef GCCUBEENGINE_INPUT_MANAGER_H
-#define GCCUBEENGINE_INPUT_MANAGER_H
+#ifndef GAMECUBEENGINE_INPUT_MANAGER_H
+#define GAMECUBEENGINE_INPUT_MANAGER_H
 
 #include <ogc/pad.h>
 #include "Debugging/Debugging.h"
@@ -44,4 +44,4 @@ public:
 	}
 };
 
-#endif //GCCUBEENGINE_INPUT_MANAGER_H
+#endif // GAMECUBEENGINE_INPUT_MANAGER_H

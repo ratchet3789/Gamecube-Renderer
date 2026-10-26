@@ -1,7 +1,7 @@
 ﻿// Created by Coby Jennings on 2026/10/11.
 
-#ifndef GCCUBEENGINE_STATICMESH_H
-#define GCCUBEENGINE_STATICMESH_H
+#ifndef GAMECUBEENGINE_STATICMESH_H
+#define GAMECUBEENGINE_STATICMESH_H
 #include <cassert>
 #include <cstring>
 #include <debug.h>
@@ -234,4 +234,4 @@ public:
 	}
 };
 
-#endif //GCCUBEENGINE_STATICMESH_H
+#endif // GAMECUBEENGINE_STATICMESH_H

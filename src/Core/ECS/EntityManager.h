@@ -1,9 +1,9 @@
 ﻿//
-// Created by addic on 2026/10/25.
+// Created by Coby Jennings on 2026/10/25.
 //
 
-#ifndef GCCUBEENGINE_ENTITYROOT_H
-#define GCCUBEENGINE_ENTITYROOT_H
+#ifndef GAMECUBEENGINE_ENTITYROOT_H
+#define GAMECUBEENGINE_ENTITYROOT_H
 
 #include "../GenericTypes.h"
 
@@ -32,4 +32,4 @@ private:
 	uint32 LivingEntityCount{0};
 };
 
-#endif //GCCUBEENGINE_ENTITYROOT_H
+#endif // GAMECUBEENGINE_ENTITYROOT_H

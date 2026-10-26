@@ -1,7 +1,7 @@
 ﻿// Created by Coby Jennings on 2026/10/08.
 
-#ifndef GCCUBEENGINE_OBSERVER_H
-#define GCCUBEENGINE_OBSERVER_H
+#ifndef GAMECUBEENGINE_OBSERVER_H
+#define GAMECUBEENGINE_OBSERVER_H
 
 class IObserver
 {
@@ -63,4 +63,4 @@ private: \
 	uint8 m_MaxObservers=0; \
 }; \
 
-#endif //GCCUBEENGINE_OBSERVER_H
+#endif // GAMECUBEENGINE_OBSERVER_H

@@ -2,8 +2,8 @@
 // Created by Coby Jennings on 2026/10/18.
 //
 
-#ifndef GCCUBEENGINE_RENDERER_H
-#define GCCUBEENGINE_RENDERER_H
+#ifndef GAMECUBEENGINE_RENDERER_H
+#define GAMECUBEENGINE_RENDERER_H
 #include <gccore.h>
 #include <malloc.h>
 
@@ -53,4 +53,4 @@ private:
 
 extern Renderer* g_pRenderer;
 
-#endif //GCCUBEENGINE_RENDERER_H
+#endif // GAMECUBEENGINE_RENDERER_H

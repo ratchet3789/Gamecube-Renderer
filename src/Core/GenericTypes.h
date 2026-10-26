@@ -1,9 +1,9 @@
 ﻿//
-// Created by addic on 2026/10/08.
+// Created by Coby Jennings on 2026/10/08.
 //
 
-#ifndef GCCUBEENGINE_GENERIC_TYPES_H
-#define GCCUBEENGINE_GENERIC_TYPES_H
+#ifndef GAMECUBEENGINE_GENERIC_TYPES_H
+#define GAMECUBEENGINE_GENERIC_TYPES_H
 
 // This is just to ensure type parity
 typedef unsigned char uint8;
@@ -43,7 +43,7 @@ typedef signed int int32;
 
 #define alignas_gc(t) __attribute__((aligned(t)))
 
-uint32 FNV1_Str(const char* Str)
+inline uint32 FNV1_Str(const char* Str)
 {
 	uint32 Hash = 2166136261;
 	const uint32 FNVPrime = 16777619;
@@ -65,7 +65,7 @@ uint32 FNV1_Numeric(const T& Value)
 	const uint32 FNVPrime = 16777619;
 
 	const uint8* bytes = reinterpret_cast<const uint8*>(&Value);
-	for (size_t i = 0; i < sizeof(T); i++)
+	for (uint32 i = 0; i < sizeof(T); i++)
 	{
 		Hash ^= bytes[i];
 		Hash *= FNVPrime;
@@ -74,4 +74,4 @@ uint32 FNV1_Numeric(const T& Value)
 }
 
 
-#endif //GCCUBEENGINE_GENERIC_TYPES_H
+#endif // GAMECUBEENGINE_GENERIC_TYPES_H

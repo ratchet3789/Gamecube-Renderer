@@ -2,8 +2,8 @@
 // Created by Coby Jennings on 2026/10/18.
 //
 
-#ifndef GCCUBEENGINE_CAMERA_H
-#define GCCUBEENGINE_CAMERA_H
+#ifndef GAMECUBEENGINE_CAMERA_H
+#define GAMECUBEENGINE_CAMERA_H
 #include <ogc/gu.h>
 
 #include "RenderObjects/StaticMesh.h"
@@ -82,4 +82,4 @@ private:
 	float FarClip{1000.0f};
 };
 
-#endif //GCCUBEENGINE_CAMERA_H
+#endif // GAMECUBEENGINE_CAMERA_H

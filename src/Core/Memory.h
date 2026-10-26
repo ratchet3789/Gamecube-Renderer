@@ -1,7 +1,7 @@
 ﻿// Created by Coby Jennings on 2026/10/08.
 
-#ifndef GCCUBEENGINE_MEMORY_H
-#define GCCUBEENGINE_MEMORY_H
+#ifndef GAMECUBEENGINE_MEMORY_H
+#define GAMECUBEENGINE_MEMORY_H
 
 #include <assert.h>
 #include <cstdint>
@@ -116,4 +116,4 @@ void operator delete(void* ptr) noexcept
 	assert(false);
 }
 
-#endif //GCCUBEENGINE_MEMORY_H
+#endif // GAMECUBEENGINE_MEMORY_H

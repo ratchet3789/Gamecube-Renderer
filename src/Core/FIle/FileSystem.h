@@ -2,8 +2,8 @@
 // Created by Coby Jennings on 2026/10/19.
 //
 
-#ifndef GCCUBEENGINE_FILESYSTEM_H
-#define GCCUBEENGINE_FILESYSTEM_H
+#ifndef GAMECUBEENGINE_FILESYSTEM_H
+#define GAMECUBEENGINE_FILESYSTEM_H
 
 #include <cstdio>
 #include <cstring>
@@ -13,12 +13,12 @@
 
 #include "../GenericTypes.h"
 
-// Data extracted directly from the GCCubeEngine_tar.s
+// Data extracted directly from the GameCubeEngine_tar.s
 extern "C"
 {
-	extern const u8 GCCubeEngine_tar[];
-	extern const u32 GCCubeEngine_tar_size;
-	extern const u8 GCCubeEngine_tar_end[];
+	extern const u8 GameCubeEngine_tar[];
+	extern const u32 GameCubeEngine_tar_size;
+	extern const u8 GameCubeEngine_tar_end[];
 }
 
 class FileSystem
@@ -67,8 +67,8 @@ public:
 
 	static bool GetFile(const char* FileName, FileEntry& OutFile)
 	{
-		const u8* Cur = GCCubeEngine_tar;
-		const u8* End = GCCubeEngine_tar + GCCubeEngine_tar_size;
+		const u8* Cur = GameCubeEngine_tar;
+		const u8* End = GameCubeEngine_tar + GameCubeEngine_tar_size;
 
 		while (Cur + sizeof(Header) < End)
 		{
@@ -108,4 +108,4 @@ public:
 	}
 };
 
-#endif //GCCUBEENGINE_FILESYSTEM_H
+#endif // GAMECUBEENGINE_FILESYSTEM_H

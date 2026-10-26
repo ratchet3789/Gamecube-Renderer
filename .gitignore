@@ -6,3 +6,6 @@ Tools/ModelToGC/out/*
 !Out/Build/*.elf
 !Out/Build/*.dol
 Out/Build/*
+
+*.tar
+*.pdb
